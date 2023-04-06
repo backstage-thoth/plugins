@@ -25,6 +25,8 @@ import { getTierColors } from '../../tierColors';
 import { Tier } from '@backstage-thoth/plugin-tech-insights-common';
 import { useTheme } from '@material-ui/core';
 import { getTierByService } from '../../tierCalculator';
+import { useApi } from '@backstage/core-plugin-api';
+import { techInsightsApiRef } from '../../api';
 
 Chart.register([ArcElement, Tooltip, Legend]);
 
@@ -38,11 +40,12 @@ export const MaturityOverview = (props: {
 }) => {
   const { checkResultsByComponent } = props;
   const tierColors = getTierColors(useTheme());
+  const api = useApi(techInsightsApiRef);
   if (!checkResultsByComponent?.length) {
     return <Alert severity="warning">No checks have any data yet.</Alert>;
   }
 
-  const tierByService = getTierByService(checkResultsByComponent);
+  const tierByService = getTierByService(api, checkResultsByComponent);
 
   const totals = Object.values(tierByService).reduce((acc, cur) => {
     if (!acc[cur]) {

@@ -29,12 +29,15 @@ import {
 import { CheckResult } from '@backstage/plugin-tech-insights-common';
 import { Alert } from '@material-ui/lab';
 import { InfoCard, Progress } from '@backstage/core-components';
-import { Category, Metadata, Tier } from '@backstage-thoth/plugin-tech-insights-common';
+import {
+  Category,
+  Metadata,
+  Tier,
+} from '@backstage-thoth/plugin-tech-insights-common';
 import { useApi } from '@backstage/core-plugin-api';
 import { TechInsightsApi, techInsightsApiRef } from '../../api';
 import { CheckResultRenderer } from '../CheckResultRenderer';
 import { CompoundEntityRef } from '@backstage/catalog-model';
-import { CheckId, checksMetadata } from '../../checksMetadata';
 import { JsonValue } from '@backstage/types';
 import { MaturityAccordionBooleanCheck } from '../MaturityAccordionBooleanCheck';
 
@@ -200,6 +203,7 @@ const infoCard = (
     >
   > = {};
   let types: string[] = [];
+  const checksMetadata = api.getChecksMetadata();
   const checkResultsByTier: Record<
     string,
     { order: number; success: number; failure: number; value: number }
@@ -211,8 +215,11 @@ const infoCard = (
   };
   for (const checkResultByComponent of checkResultsByComponent) {
     for (const checkResult of checkResultByComponent.checkResults) {
-      const metadata: Metadata =
-        checksMetadata[checkResult.check.id as CheckId];
+      const metadata: Metadata = checksMetadata[checkResult.check.id];
+      if (!metadata) {
+        continue;
+      }
+
       const category: string = metadata?.category;
       if (!checkResultsByCategory[category]) {
         checkResultsByCategory[category] = {};

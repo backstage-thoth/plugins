@@ -33,21 +33,25 @@ import {
   jsonRulesEngineCheckResultRenderer,
 } from '../components/CheckResultRenderer';
 import qs from 'qs';
+import { ChecksMetadata, checksMetadata } from '../checksMetadata';
 
 /** @public */
 export class TechInsightsClient implements TechInsightsApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly identityApi: IdentityApi;
   private readonly renderers?: CheckResultRenderer[];
+  private readonly checksMetadata: ChecksMetadata;
 
   constructor(options: {
     discoveryApi: DiscoveryApi;
     identityApi: IdentityApi;
     renderers?: CheckResultRenderer[];
+    checksMetadata?: ChecksMetadata;
   }) {
     this.discoveryApi = options.discoveryApi;
     this.identityApi = options.identityApi;
     this.renderers = options.renderers;
+    this.checksMetadata = options.checksMetadata || checksMetadata;
   }
 
   async getFacts(
@@ -59,6 +63,10 @@ export class TechInsightsClient implements TechInsightsApi {
       ids: facts,
     });
     return await this.api<InsightFacts>(`/facts/latest?${query}`);
+  }
+
+  getChecksMetadata(): ChecksMetadata {
+    return this.checksMetadata;
   }
 
   getCheckResultRenderers(types: string[]): CheckResultRenderer[] {

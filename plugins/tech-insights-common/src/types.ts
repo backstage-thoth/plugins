@@ -1,5 +1,5 @@
 export type Metadata = {
-  category: Category;
+  category: string;
   tier: Tier;
 };
 

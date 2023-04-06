@@ -7,8 +7,10 @@ import { CategoryScale, Chart, LinearScale, BarElement } from 'chart.js';
 import { makeStyles, Theme, useTheme } from '@material-ui/core';
 import { InfoCard } from '@backstage/core-components';
 import { getTierColors } from '../../tierColors';
-import { Category, Tier } from '@backstage-thoth/plugin-tech-insights-common';
+import { Tier } from '@backstage-thoth/plugin-tech-insights-common';
 import { getTierByServiceCategory } from '../../tierCalculator';
+import { useApi } from '@backstage/core-plugin-api';
+import { TechInsightsApi, techInsightsApiRef } from '../../api';
 
 Chart.register([LinearScale, CategoryScale, BarElement]);
 
@@ -22,23 +24,18 @@ const useStyles = makeStyles<Theme, { height: number | undefined }>({
 });
 
 const getDatasetByTier = (
+  categories: string[],
   totals: Record<string, Record<string, number>>,
   tierColors: ReturnType<typeof getTierColors>,
   tier: Tier,
 ) => ({
   label: tier,
-  data: [
-    totals[Category.Documentation][tier] ?? 0,
-    totals[Category.Observability][tier] ?? 0,
-    totals[Category.Readability][tier] ?? 0,
-    totals[Category.Reliability][tier] ?? 0,
-    totals[Category.Security][tier] ?? 0,
-    totals[Category.ServiceOwnership][tier] ?? 0,
-  ],
+  data: categories.map(c => totals[c][tier] ?? 0),
   backgroundColor: tierColors[tier],
 });
 
 const getTotalsByCategoryTier = (
+  api: TechInsightsApi,
   checkResultsByComponent:
     | {
         compoundEntityRef: CompoundEntityRef;
@@ -46,7 +43,7 @@ const getTotalsByCategoryTier = (
       }[],
 ): Record<string, Record<string, number>> => {
   const totals: Record<string, Record<string, number>> = {};
-  Object.values(getTierByServiceCategory(checkResultsByComponent)).map(
+  Object.values(getTierByServiceCategory(api, checkResultsByComponent)).map(
     tierByCategory => {
       Object.entries(tierByCategory).map(([categoryKey, tier]) => {
         if (!totals[categoryKey]) {
@@ -76,11 +73,19 @@ export const MaturityCategoryBreakdown = (props: {
   const classes = useStyles({ height: 300 });
   const tierColors = getTierColors(useTheme());
   const { checkResultsByComponent } = props;
+  const api = useApi(techInsightsApiRef);
   if (!checkResultsByComponent?.length) {
     return <Alert severity="warning">No checks have any data yet.</Alert>;
   }
 
-  const totals = getTotalsByCategoryTier(checkResultsByComponent);
+  const totals = getTotalsByCategoryTier(api, checkResultsByComponent);
+  const categories = [...Object.values(api.getChecksMetadata()).reduce(
+    (acc, cur) => {
+      return acc.add(cur.category);
+    },
+    new Set<string>(),
+  )].sort();
+
   return (
     <InfoCard
       variant="fullHeight"
@@ -103,19 +108,12 @@ export const MaturityCategoryBreakdown = (props: {
           },
         }}
         data={{
-          labels: [
-            Category.Documentation,
-            Category.Observability,
-            Category.Readability,
-            Category.Reliability,
-            Category.Security,
-            Category.ServiceOwnership,
-          ],
+          labels: categories,
           datasets: [
-            getDatasetByTier(totals, tierColors, Tier.C),
-            getDatasetByTier(totals, tierColors, Tier.B),
-            getDatasetByTier(totals, tierColors, Tier.A),
-            getDatasetByTier(totals, tierColors, Tier.S),
+            getDatasetByTier(categories, totals, tierColors, Tier.C),
+            getDatasetByTier(categories, totals, tierColors, Tier.B),
+            getDatasetByTier(categories, totals, tierColors, Tier.A),
+            getDatasetByTier(categories, totals, tierColors, Tier.S),
           ],
         }}
       />

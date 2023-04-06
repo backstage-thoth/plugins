@@ -1,7 +1,11 @@
 import { CompoundEntityRef } from '@backstage/catalog-model';
 import { CheckResult } from '@backstage/plugin-tech-insights-common';
-import { Category, Metadata, Tier } from '@backstage-thoth/plugin-tech-insights-common';
-import { CheckId, checksMetadata } from './checksMetadata';
+import {
+  Category,
+  Metadata,
+  Tier,
+} from '@backstage-thoth/plugin-tech-insights-common';
+import { TechInsightsApi } from './api';
 
 export const orderByTier: Record<Tier, number> = {
   [Tier.C]: 0,
@@ -18,6 +22,7 @@ export const tierByOrder: Record<number, Tier> = {
 };
 
 export const getTierByServiceCategory = (
+  api: TechInsightsApi,
   checkResultsByComponent:
     | {
         compoundEntityRef: CompoundEntityRef;
@@ -27,8 +32,12 @@ export const getTierByServiceCategory = (
   checkResultsByComponent.reduce((acc, item) => {
     const itemName = item.compoundEntityRef.name;
     acc[itemName] = item.checkResults.reduce((tierByCategory, cur) => {
-      const metadata: Metadata = checksMetadata[cur.check.id as CheckId];
-      const category: Category = metadata?.category;
+      const metadata: Metadata = api.getChecksMetadata()[cur.check.id];
+      if (!metadata) {
+        return tierByCategory;
+      }
+
+      const category: Category = metadata?.category as Category;
 
       if (!tierByCategory[category]) {
         tierByCategory[category] = Tier.S;
@@ -48,6 +57,7 @@ export const getTierByServiceCategory = (
   }, {} as Record<string, Record<string, Tier>>);
 
 export const getTierByService = (
+  api: TechInsightsApi,
   checkResultsByComponent:
     | {
         compoundEntityRef: CompoundEntityRef;
@@ -55,6 +65,7 @@ export const getTierByService = (
       }[],
 ): Record<string, Tier> => {
   const tierByServiceCategory = getTierByServiceCategory(
+    api,
     checkResultsByComponent,
   );
   return Object.entries(tierByServiceCategory).reduce(

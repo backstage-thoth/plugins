@@ -25,3 +25,4 @@ export { BooleanCheck } from './components/BooleanCheck';
 export { jsonRulesEngineCheckResultRenderer } from './components/CheckResultRenderer';
 export { AccordionBooleanCheck } from './components/AccordionBooleanCheck';
 export type { CheckResultRenderer } from './components/CheckResultRenderer';
+export * from './checksMetadata';

@@ -29,7 +29,11 @@ import {
 import { CheckResult } from '@backstage/plugin-tech-insights-common';
 import { Alert } from '@material-ui/lab';
 import { ErrorPanel, InfoCard, Progress } from '@backstage/core-components';
-import { Category, Metadata, Tier } from '@backstage-thoth/plugin-tech-insights-common';
+import {
+  Category,
+  Metadata,
+  Tier,
+} from '@backstage-thoth/plugin-tech-insights-common';
 import { TechInsightsApi } from '../../api';
 import { useApi } from '@backstage/core-plugin-api';
 import { InsightFacts, techInsightsApiRef } from '../../api';
@@ -37,7 +41,6 @@ import { CheckResultRenderer } from '../CheckResultRenderer';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import useAsync from 'react-use/lib/useAsync';
 import { getCompoundEntityRef } from '@backstage/catalog-model';
-import { CheckId, checksMetadata } from '../../checksMetadata';
 import { getTierColors } from '../../tierColors';
 
 const HeaderRightTypography = withStyles(theme => ({
@@ -181,8 +184,12 @@ const infoCard = (
     string,
     Record<string, CheckResult[]>
   > = checkResults.reduce((acc, checkResult) => {
-    const metadata: Metadata = checksMetadata[checkResult.check.id as CheckId];
-    const category: Category = metadata?.category;
+    const metadata: Metadata = api.getChecksMetadata()[checkResult.check.id];
+    if (!metadata) {
+      return acc;
+    }
+
+    const category: Category = metadata?.category as Category;
     if (!acc[category]) {
       acc[category] = {};
     }

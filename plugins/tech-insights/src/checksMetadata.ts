@@ -1,14 +1,16 @@
 import {
   Category as CommonCategory,
   CheckId as CommonCheckId,
-  Metadata,
   Tier,
 } from '@backstage-thoth/plugin-tech-insights-common';
-import { CheckId as CodeScanningCheckId } from '@backstage-thoth/plugin-tech-insights-github-code-scanning-common';
 
-export type CheckId = CommonCheckId & CodeScanningCheckId;
-
-export const checksMetadata: Record<CheckId, Metadata> = {
+export const checksMetadata: Record<
+  string,
+  {
+    category: string;
+    tier: Tier;
+  }
+> = {
   [CommonCheckId.OwnerCheck]: {
     category: CommonCategory.ServiceOwnership,
     tier: Tier.A,
@@ -57,20 +59,6 @@ export const checksMetadata: Record<CheckId, Metadata> = {
     category: CommonCategory.Observability,
     tier: Tier.B,
   },
-  [CodeScanningCheckId.IsGithubCodeScanningEnabled]: {
-    category: CommonCategory.Security,
-    tier: Tier.B,
-  },
-  [CodeScanningCheckId.withoutGithubCodeScanningCriticalAlerts]: {
-    category: CommonCategory.Security,
-    tier: Tier.B,
-  },
-  [CodeScanningCheckId.withoutGithubCodeScanningMediumAlerts]: {
-    category: CommonCategory.Security,
-    tier: Tier.A,
-  },
-  [CodeScanningCheckId.withoutGithubCodeScanningLowAlerts]: {
-    category: CommonCategory.Security,
-    tier: Tier.S,
-  },
 };
+
+export type ChecksMetadata = typeof checksMetadata;

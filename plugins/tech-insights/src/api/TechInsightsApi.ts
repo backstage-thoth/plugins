@@ -23,6 +23,7 @@ import {
 import { Check, InsightFacts } from './types';
 import { CheckResultRenderer } from '../components/CheckResultRenderer';
 import { CompoundEntityRef } from '@backstage/catalog-model';
+import { ChecksMetadata } from '../checksMetadata';
 
 /**
  * {@link @backstage/core-plugin-api#ApiRef} for the {@link TechInsightsApi}
@@ -40,6 +41,7 @@ export const techInsightsApiRef = createApiRef<TechInsightsApi>({
  */
 export interface TechInsightsApi {
   getCheckResultRenderers: (types: string[]) => CheckResultRenderer[];
+  getChecksMetadata(): ChecksMetadata;
   getAllChecks(): Promise<Check[]>;
   runChecks(
     entityParams: CompoundEntityRef,

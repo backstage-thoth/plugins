@@ -1,0 +1,31 @@
+version: '3.9'
+
+
+services:
+  db:
+    image: postgres:latest
+    container_name: thoth-db
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - custom-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: thoth-pgadmin
+    restart: always
+    ports:
+      - 7001:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres@postgres.com
+      PGADMIN_DEFAULT_PASSWORD: postgres
+    networks:
+      - custom-network
+
+networks:
+  custom-network:
+    name: thoth

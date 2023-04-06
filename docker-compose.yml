@@ -1,0 +1,48 @@
+version: '3.9'
+
+
+services:
+  app:
+    image: thoth
+    container_name: thoth-app
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 7000:7000
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      GH_CLIENT_ID: 1fe616fde4860dbe9ab3
+      GH_CLIENT_SECRET: b0896f171daa94f86d503ff741aa819047ad3f11
+    networks:
+      - custom-network
+
+  db:
+    image: postgres:latest
+    container_name: thoth-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - custom-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: thoth-pgadmin
+    restart: always
+    ports:
+      - 7001:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres@postgres.com
+      PGADMIN_DEFAULT_PASSWORD: postgres
+    networks:
+      - custom-network
+
+networks:
+  custom-network:
+    name: thoth
